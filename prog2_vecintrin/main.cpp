@@ -232,6 +232,8 @@ void clampedExpSerial(float* values, int* exponents, float* output, int N) {
         result *= x;
         count--;
       }
+
+      // straightforward
       if (result > 9.999999f) {
         result = 9.999999f;
       }
@@ -249,7 +251,43 @@ void clampedExpVector(float* values, int* exponents, float* output, int N) {
   // Your solution should work for any value of
   // N and VECTOR_WIDTH, not just when VECTOR_WIDTH divides N
   //
+  __cs149_vec_float x;
+  __cs149_vec_int y;
+  __cs149_vec_int count;
+  __cs149_vec_float zero = _cs149_vset_float(0.f);
+  __cs149_vec_int zero_int = _cs149_vset_int(0);
+  __cs149_vec_int one = _cs149_vset_int(1);
+  __cs149_vec_float nine = _cs149_vset_float(9.999999f);
+   __cs149_mask maskAll, maskGreaterOne, maskGreaterNine;
   
+  for (int i=0; i<N; i+=VECTOR_WIDTH){
+    // generate mask of ones
+    maskAll = _cs149_init_ones();
+    maskGreaterOne = _cs149_init_ones();
+    maskGreaterNine = _cs149_init_ones(0);
+
+    // load current values into x and y
+    _cs149_vload_float(x, values+i, maskAll); 
+    _cs149_vload_int(y, exponents+i, maskAll); 
+
+    // set the result to start with one
+    __cs149_vec_float result = _cs149_vset_float(1.f);
+    
+    _cs149_vsub_int(count, y, one, maskAll);
+    _cs149_vadd_int(count, count, one, maskAll);
+    _cs149_vgt_int(maskGreaterOne, count, zero_int, maskAll);
+
+    while (_cs149_cntbits(maskGreaterOne) > 0){
+    _cs149_vmult_float(result, result, x, maskGreaterOne);
+    _cs149_vsub_int(count, count, one, maskAll);
+    _cs149_vgt_int(maskGreaterOne, count, zero_int, maskAll);
+    }
+
+    _cs149_vgt_float(maskGreaterNine, result, nine, maskAll);
+    _cs149_vmove_float(result, nine, maskGreaterNine);
+
+    _cs149_vstore_float(output+i, result, maskAll);
+  }
 }
 
 // returns the sum of all elements in values
