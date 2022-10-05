@@ -8,6 +8,8 @@ typedef struct {
     float y0, y1;
     unsigned int width;
     unsigned int height;
+    int startRow;
+    int endRow;
     int maxIterations;
     int* output;
     int threadId;
@@ -27,6 +29,24 @@ extern void mandelbrotSerial(
 // workerThreadStart --
 //
 // Thread entrypoint.
+static inline int mandel(float c_re, float c_im, int count)
+{
+    float z_re = c_re, z_im = c_im;
+    int i;
+    for (i = 0; i < count; ++i) {
+
+        if (z_re * z_re + z_im * z_im > 4.f)
+            break;
+
+        float new_re = z_re*z_re - z_im*z_im;
+        float new_im = 2.f * z_re * z_im;
+        z_re = c_re + new_re;
+        z_im = c_im + new_im;
+    }
+
+    return i;
+}
+
 void workerThreadStart(WorkerArgs * const args) {
 
     // TODO FOR CS149 STUDENTS: Implement the body of the worker
@@ -34,8 +54,10 @@ void workerThreadStart(WorkerArgs * const args) {
     // to compute a part of the output image.  For example, in a
     // program that uses two threads, thread 0 could compute the top
     // half of the image and thread 1 could compute the bottom half.
+    mandelbrotSerial(args->x0, args->y0, args->x1, args->y1, args->width, args->height, args->startRow, args->endRow, 
+        args->maxIterations, args->output);
 
-    printf("Hello world from thread %d\n", args->threadId);
+    // printf("start %d end %d\n", args->startRow, args->endRow);
 }
 
 //
@@ -72,6 +94,8 @@ void mandelbrotThread(
         args[i].y1 = y1;
         args[i].width = width;
         args[i].height = height;
+        args[i].startRow = (height/numThreads) * i;
+        args[i].endRow = (height/numThreads) * (i+1);
         args[i].maxIterations = maxIterations;
         args[i].numThreads = numThreads;
         args[i].output = output;
@@ -85,6 +109,9 @@ void mandelbrotThread(
     for (int i=1; i<numThreads; i++) {
         workers[i] = std::thread(workerThreadStart, &args[i]);
     }
+
+    // printf("Hello world from thread %d height: %d \n", args->threadId,
+                                                    //    args->height);
     
     workerThreadStart(&args[0]);
 
