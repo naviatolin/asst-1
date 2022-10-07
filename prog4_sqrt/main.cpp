@@ -38,7 +38,7 @@ int main() {
         if (i % 2 == 0) {
             values[i] = 1.0f;
         } else {
-            values[i] = 2.998f;
+            values[i] = 2.999f;
         }
     }
 
