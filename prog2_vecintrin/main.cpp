@@ -249,7 +249,15 @@ void clampedExpVector(float* values, int* exponents, float* output, int N) {
   // Your solution should work for any value of
   // N and VECTOR_WIDTH, not just when VECTOR_WIDTH divides N
   //
-  
+  results = [1, 1, 1, 1]
+  maxiter = max(exponents)
+  for (it=0:it<maxiter:it++) {
+    mask = exponents > it
+    multi(result, result, x, mask)
+    
+    }
+  }
+
 }
 
 // returns the sum of all elements in values
