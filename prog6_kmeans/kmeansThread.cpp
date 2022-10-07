@@ -207,10 +207,20 @@ void kMeansThread(double *data, double *clusterCentroids, int *clusterAssignment
     // Setup args struct
     args.start = 0;
     args.end = K;
-
+    
+    double startTime;
+    
+    startTime = CycleTimer::currentSeconds();
     computeAssignments(&args);
+    printf("[Compute Assignments Time]: %.3f ms\n", (CycleTimer::currentSeconds() - startTime) * 1000);
+
+    startTime = CycleTimer::currentSeconds();
     computeCentroids(&args);
+    printf("[Compute centroids Time]: %.3f ms\n", (CycleTimer::currentSeconds() - startTime) * 1000);
+
+    startTime = CycleTimer::currentSeconds();
     computeCost(&args);
+    printf("[Compute cost Time]: %.3f ms\n", (CycleTimer::currentSeconds() - startTime) * 1000);
 
     iter++;
   }
