@@ -63,7 +63,7 @@ double dist(double *x, double *y, int nDim) {
 }
 
 void computeAssignmentKLoop(WorkerArgs *const args, double * minDist, int threadId){
-  for (int m = threadid; m < args->M; m+=numThreads) {
+  for (int m = threadId; m < args->M; m+=8) {
     for (int k = 0; k < args->end; k++) {
         double d = dist(&args->data[m * args->N],
                         &args->clusterCentroids[k * args->N], args->N);
@@ -87,16 +87,16 @@ void computeAssignments(WorkerArgs *const args) {
     args->clusterAssignments[m] = -1;
   }
 
-  std::thread workers[9];
+  std::thread workers[8];
   int threadId;
 
   // Assign datapoints to closest centroids
-  for (threadId = 1; threadId < 9; threadId++){
+  for (threadId = 0; threadId < 8; threadId++){
     workers[threadId] = std::thread(computeAssignmentKLoop, args, minDist, threadId);
   }
 
-  for (int i=args->start; i<args->end; i++) {
-    workers[i].join();
+  for (threadId = 0; threadId < 8; threadId++){
+    workers[threadId].join();
   } 
 
   free(minDist);
